@@ -2,6 +2,12 @@
 
 import React, { useState } from 'react';
 import { ethers } from 'ethers';
+import Image from 'next/image'; // Import Next.js Image component
+
+interface Attribute {
+  trait_type?: string;
+  value: string | number;
+}
 
 interface Token {
   token_address: string;
@@ -12,7 +18,12 @@ interface Token {
   balance?: string;
   type: 'ERC-20' | 'NFT';
   token_id?: string;
-  metadata?: { name?: string; description?: string; image?: string; attributes?: any[] } | null;
+  metadata?: {
+    name?: string;
+    description?: string;
+    image?: string;
+    attributes?: Attribute[];
+  } | null;
 }
 
 export default function WalletTokens() {
@@ -111,9 +122,9 @@ export default function WalletTokens() {
                     <td className="border p-2">{token.type}</td>
                     <td className="border p-2">
                       {token.logo ? (
-                        <img src={token.logo} alt={token.name} width="20" />
+                        <Image src={token.logo} alt={token.name} width={20} height={20} />
                       ) : token.metadata?.image ? (
-                        <img src={token.metadata.image} alt={token.name} width="20" />
+                        <Image src={token.metadata.image} alt={token.name} width={20} height={20} />
                       ) : (
                         'N/A'
                       )}
@@ -135,7 +146,13 @@ export default function WalletTokens() {
                       {token.metadata ? (
                         <div>
                           {token.metadata.image && (
-                            <img src={token.metadata.image} alt="NFT" width="50" className="mb-2" />
+                            <Image
+                              src={token.metadata.image}
+                              alt="NFT"
+                              width={50}
+                              height={50}
+                              className="mb-2"
+                            />
                           )}
                           <p>{token.metadata.name || 'No name'}</p>
                           <p>{token.metadata.description || 'No description'}</p>
