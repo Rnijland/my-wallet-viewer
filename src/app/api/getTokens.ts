@@ -16,7 +16,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       headers: { 'X-API-Key': apiKey },
     });
     return res.status(200).json(response.data);
-  } catch (error) {
-    return res.status(500).json({ error: error.message });
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      return res.status(500).json({ error: error.message });
+    }
+    return res.status(500).json({ error: 'An unknown error occurred' });
   }
 }

@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import axios from 'axios';
 
+function safeJsonParse<T = unknown>(str: string): T {
+  return JSON.parse(str) as T;
+}
+
 // Define interfaces for Moralis API responses
 interface MoralisToken {
   token_address: string;
@@ -45,7 +49,7 @@ export async function GET(req: NextRequest) {
     });
     console.log('Raw ERC-20 response:', tokenResponse.data);
 
-    const tokens = tokenResponse.data.map((token) => ({
+    const tokens = tokenResponse.data.map((token: MoralisToken) => ({
       token_address: token.token_address,
       name: token.name,
       symbol: token.symbol,
@@ -63,8 +67,8 @@ export async function GET(req: NextRequest) {
     console.log('Raw NFT response:', nftResponse.data);
 
     const nfts = await Promise.all(
-      nftResponse.data.result.map(async (nft) => {
-        let metadata = nft.metadata ? JSON.parse(nft.metadata) : null;
+      nftResponse.data.result.map(async (nft: MoralisNFT) => {
+        let metadata: unknown = nft.metadata ? safeJsonParse(nft.metadata) : null;
 
         if (!metadata && nft.token_uri) {
           try {
