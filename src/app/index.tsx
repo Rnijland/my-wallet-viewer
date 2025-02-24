@@ -1,32 +1,31 @@
-'use client';
-
 import React, { useState } from 'react';
-import { ethers } from 'ethers';
+import { ethers } from 'ethers'; // Import ethers for version 6
 
+// Define the Token interface for type safety
 interface Token {
   token_address: string;
   name: string;
   symbol: string;
-  logo?: string | null;
-  decimals?: number;
-  balance?: string;
-  type: 'ERC-20' | 'NFT';
-  token_id?: string;
-  metadata?: { name?: string; description?: string; image?: string; attributes?: any[] } | null;
+  logo?: string;
+  decimals: number;
+  balance: string;
 }
 
 export default function WalletTokens() {
+  // State variables for address input, token list, loading, and error handling
   const [address, setAddress] = useState<string>('');
   const [tokens, setTokens] = useState<Token[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Handle form submission to fetch tokens
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const trimmedAddress = address.trim();
 
+    // Validate Ethereum address using ethers v6
     if (!ethers.isAddress(trimmedAddress)) {
-      setError('Invalid Base address');
+      setError('Invalid Ethereum address');
       return;
     }
 
@@ -35,10 +34,10 @@ export default function WalletTokens() {
     setTokens([]);
 
     try {
+      // Fetch token data from the API
       const res = await fetch(`/api/getTokens?address=${trimmedAddress}`);
       if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.error || 'Failed to fetch tokens');
+        throw new Error('Failed to fetch tokens');
       }
       const data: Token[] = await res.json();
       setTokens(data);
@@ -51,14 +50,15 @@ export default function WalletTokens() {
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Wallet Token & NFT Viewer (Base Chain)</h1>
+      <h1 className="text-2xl font-bold mb-4">Wallet Token Viewer</h1>
 
+      {/* Form to input Ethereum address */}
       <form onSubmit={handleSubmit} className="flex gap-2 mb-4">
         <input
           type="text"
           value={address}
           onChange={(e) => setAddress(e.target.value)}
-          placeholder="Enter Base wallet address"
+          placeholder="Enter Ethereum wallet address"
           className="border p-2 flex-grow"
         />
         <button
@@ -66,18 +66,20 @@ export default function WalletTokens() {
           disabled={loading}
           className="bg-blue-500 text-white p-2 disabled:bg-gray-400"
         >
-          {loading ? 'Loading...' : 'Get Data'}
+          {loading ? 'Loading...' : 'Get Tokens'}
         </button>
       </form>
 
+      {/* Display error message if present */}
       {error && <p className="text-red-500 mb-4">{error}</p>}
 
+      {/* Display token table if tokens are fetched */}
       {tokens.length > 0 && (
         <div>
           <h2 className="text-lg mb-2">
-            Assets for{' '}
+            Tokens for{' '}
             <a
-              href={`https://basescan.org/address/${address}`}
+              href={`https://etherscan.io/address/${address}`}
               target="_blank"
               rel="noopener noreferrer"
               className="text-blue-500 underline"
@@ -88,32 +90,26 @@ export default function WalletTokens() {
           <table className="table-auto w-full border-collapse border">
             <thead>
               <tr className="bg-gray-200">
-                <th className="border p-2">Type</th>
                 <th className="border p-2">Logo</th>
                 <th className="border p-2">Name</th>
                 <th className="border p-2">Symbol</th>
-                <th className="border p-2">Balance/Token ID</th>
+                <th className="border p-2">Balance</th>
                 <th className="border p-2">Contract Address</th>
-                <th className="border p-2">Metadata</th>
               </tr>
             </thead>
             <tbody>
               {tokens.map((token, index) => {
+                // Format balance using ethers v6, with fallback for missing data
                 const formattedBalance =
-                  token.type === 'ERC-20' && token.balance && token.decimals
+                  token.balance && token.decimals
                     ? ethers.formatUnits(token.balance, token.decimals)
-                    : token.type === 'NFT'
-                    ? token.token_id || 'N/A'
                     : 'N/A';
 
                 return (
                   <tr key={index}>
-                    <td className="border p-2">{token.type}</td>
                     <td className="border p-2">
                       {token.logo ? (
                         <img src={token.logo} alt={token.name} width="20" />
-                      ) : token.metadata?.image ? (
-                        <img src={token.metadata.image} alt={token.name} width="20" />
                       ) : (
                         'N/A'
                       )}
@@ -123,35 +119,13 @@ export default function WalletTokens() {
                     <td className="border p-2">{formattedBalance}</td>
                     <td className="border p-2">
                       <a
-                        href={`https://basescan.org/token/${token.token_address}`}
+                        href={`https://etherscan.io/token/${token.token_address}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-blue-500 underline"
                       >
                         {token.token_address}
                       </a>
-                    </td>
-                    <td className="border p-2">
-                      {token.metadata ? (
-                        <div>
-                          {token.metadata.image && (
-                            <img src={token.metadata.image} alt="NFT" width="50" className="mb-2" />
-                          )}
-                          <p>{token.metadata.name || 'No name'}</p>
-                          <p>{token.metadata.description || 'No description'}</p>
-                          {token.metadata.attributes && (
-                            <ul className="list-disc pl-4">
-                              {token.metadata.attributes.map((attr, i) => (
-                                <li key={i}>
-                                  {attr.trait_type || 'Trait'}: {attr.value}
-                                </li>
-                              ))}
-                            </ul>
-                          )}
-                        </div>
-                      ) : (
-                        'N/A'
-                      )}
                     </td>
                   </tr>
                 );
@@ -161,8 +135,9 @@ export default function WalletTokens() {
         </div>
       )}
 
+      {/* Message when no tokens are found */}
       {tokens.length === 0 && !loading && !error && (
-        <p>No tokens or NFTs found or enter an address to start.</p>
+        <p>No tokens found or enter an address to start.</p>
       )}
     </div>
   );
