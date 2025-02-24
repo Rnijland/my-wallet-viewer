@@ -1,5 +1,9 @@
 import React, { useState } from 'react';
 import { ethers } from 'ethers'; // Import ethers for version 6
+import Image from 'next/image';
+const NextImageWrapper: React.FC<React.ComponentProps<typeof Image>> = (props) => {
+  return <Image {...props} />;
+};
 
 // Define the Token interface for type safety
 interface Token {
@@ -41,8 +45,12 @@ export default function WalletTokens() {
       }
       const data: Token[] = await res.json();
       setTokens(data);
-    } catch (err) {
-      setError((err as Error).message);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError(String(err));
+      }
     } finally {
       setLoading(false);
     }
@@ -109,7 +117,7 @@ export default function WalletTokens() {
                   <tr key={index}>
                     <td className="border p-2">
                       {token.logo ? (
-                        <img src={token.logo} alt={token.name} width="20" />
+                        <NextImageWrapper src={token.logo} alt={token.name} width={20} height={20} />
                       ) : (
                         'N/A'
                       )}

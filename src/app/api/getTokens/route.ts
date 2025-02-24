@@ -72,8 +72,12 @@ export async function GET(req: NextRequest) {
               timeout: 5000,
             });
             metadata = metadataResponse.data;
-          } catch (err) {
-            console.warn(`Failed to fetch metadata for token ${nft.token_id}:`, err.message);
+          } catch (err: unknown) {
+            if (err instanceof Error) {
+              console.warn(`Failed to fetch metadata for token ${nft.token_id}:`, err.message);
+            } else {
+              console.warn(`Failed to fetch metadata for token ${nft.token_id}:`, err);
+            }
           }
         }
 
@@ -92,7 +96,7 @@ export async function GET(req: NextRequest) {
     console.log('Combined processed data:', combinedData);
 
     return NextResponse.json(combinedData);
-  } catch (error) {
+  } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
       console.error('Axios error details:', {
         message: error.message,

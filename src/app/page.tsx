@@ -56,8 +56,12 @@ export default function WalletTokens() {
       }
       const data: Token[] = await res.json();
       setTokens(data);
-    } catch (err) {
-      setError((err as Error).message);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError(String(err));
+      }
     } finally {
       setLoading(false);
     }
