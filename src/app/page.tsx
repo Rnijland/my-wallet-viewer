@@ -4,9 +4,17 @@ import React, { useState } from 'react';
 import { ethers } from 'ethers';
 import Image from 'next/image'; // Import Next.js Image component
 
+// Define interfaces for token and NFT data
 interface Attribute {
   trait_type?: string;
   value: string | number;
+}
+
+interface TokenMetadata {
+  name?: string;
+  description?: string;
+  image?: string;
+  attributes?: Attribute[];
 }
 
 interface Token {
@@ -18,12 +26,7 @@ interface Token {
   balance?: string;
   type: 'ERC-20' | 'NFT';
   token_id?: string;
-  metadata?: {
-    name?: string;
-    description?: string;
-    image?: string;
-    attributes?: Attribute[];
-  } | null;
+  metadata?: TokenMetadata | null;
 }
 
 export default function WalletTokens() {

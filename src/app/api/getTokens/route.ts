@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import axios from 'axios';
 
-// Define interfaces for Moralis responses
+// Define interfaces for Moralis API responses
 interface MoralisToken {
   token_address: string;
   name: string;
